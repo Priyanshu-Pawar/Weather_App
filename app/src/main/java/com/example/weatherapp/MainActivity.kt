@@ -128,7 +128,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun time(timestamp: Long): String {
-        val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+        val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
         return  sdf.format((Date(timestamp*1000)))
     }
 
