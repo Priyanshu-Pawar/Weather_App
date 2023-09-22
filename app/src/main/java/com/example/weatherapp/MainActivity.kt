@@ -1,6 +1,7 @@
 package com.example.weatherapp
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.weatherapp.databinding.ActivityMainBinding
@@ -21,7 +22,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        fetchWeatherData("Nagpur")
+        fetchWeatherData("India")
         searchCity()
 
     }
@@ -62,8 +63,8 @@ class MainActivity : AppCompatActivity() {
                      val temperature = responseBody.main.temp.toString()
                      val humidity = responseBody.main.humidity
                      val windSpeed = responseBody.wind.speed
-                     val sunRise = responseBody.sys.sunrise
-                     val sunSet = responseBody.sys.sunset
+                     val sunRise = responseBody.sys.sunrise.toLong()
+                     val sunSet = responseBody.sys.sunset.toLong()
                      val seaLevel = responseBody.main.pressure
                      val condition = responseBody.weather.firstOrNull()?.main?: "unknown"
                      val minTemp = responseBody.main.temp_min
@@ -75,12 +76,12 @@ class MainActivity : AppCompatActivity() {
                      binding.minTemp.text = "MIn Temp: $minTemp ℃"
                      binding.textHumidity.text = "$humidity ℃"
                      binding.textWind.text = "$windSpeed m/s"
-                     binding.textSunrise.text = "$sunRise"
-                     binding.textSunset.text = "$sunSet"
+                     binding.textSunrise.text = "${time(sunRise)}"
+                     binding.textSunset.text = "${time(sunSet)}"
                      binding.textSea.text = "$seaLevel hPa"
                      binding.textCondition.text = condition
                      binding.city.text = "$CityName"
-                     binding.day.text =  dayName(System.currentTimeMillis())
+                     binding.day.text =  dayName()
                      binding.date.text = date()
 
                      changeBackgroundImagesAcctoCondition(condition)
@@ -88,18 +89,37 @@ class MainActivity : AppCompatActivity() {
              }
 
              override fun onFailure(call: Call<WeatherAppData>, t: Throwable) {
-                 TODO("Not yet implemented")
+                 Log.d("Main Activity", "onFailure: " + t.message)
              }
          })
     }
 
     private fun changeBackgroundImagesAcctoCondition(conditions: String) {
         when(conditions){
-            "Haze" ->{
+            "clear Sky", "Sunny", "Clear" ->{
+                binding.root.setBackgroundResource(R.drawable.sunny_weather)
+                binding.lottieAnimation.setAnimation(R.raw.sun)
+            }
+
+            "Partly Clouds", "Clouds", "OverCast", "Mist", "Foggy", "Cloud" ->{
                 binding.root.setBackgroundResource(R.drawable.colud_background)
-                binding.lottieAnimation.setAnimation(R.raw.rainy)
+                binding.lottieAnimation.setAnimation(R.raw.cloud)
+            }
+
+            "Light Rain", "Drizzle", "Moderate Rain", "Showers", "Heavy Rain", "Rain"->{
+                binding.root.setBackgroundResource(R.drawable.rain_background)
+                binding.lottieAnimation.setAnimation(R.raw.rain)
+            }
+            "Light Snow", "Moderate Snow", "Heavy Snow", "Blizzard" ->{
+                binding.root.setBackgroundResource(R.drawable.snow_background)
+                binding.lottieAnimation.setAnimation(R.raw.snow)
+            }
+            else ->{
+                binding.root.setBackgroundResource(R.drawable.sunny_weather)
+                binding.lottieAnimation.setAnimation(R.raw.sun)
             }
         }
+        binding.lottieAnimation.playAnimation()
     }
 
     private fun date(): String {
@@ -107,7 +127,12 @@ class MainActivity : AppCompatActivity() {
         return  sdf.format((Date()))
     }
 
-    fun dayName(timestamp: Long):String{
+    private fun time(timestamp: Long): String {
+        val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+        return  sdf.format((Date(timestamp*1000)))
+    }
+
+    fun dayName():String{
         val sdf = SimpleDateFormat("EEEE", Locale.getDefault())
         return  sdf.format((Date()))
     }
