@@ -1,5 +1,6 @@
 package com.example.weatherapp
 
+import android.app.ProgressDialog
 import android.os.Bundle
 import android.util.Log
 import android.widget.SearchView
@@ -18,9 +19,15 @@ class MainActivity : AppCompatActivity() {
     private val binding :ActivityMainBinding by lazy {
         ActivityMainBinding.inflate(layoutInflater)
     }
+    private lateinit var progressDialog: ProgressDialog
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+
+        progressDialog = ProgressDialog(this)
+        progressDialog.setMessage("Loading...")
+        progressDialog.setCancelable(false)
 
         fetchWeatherData("India")
         searchCity()
@@ -36,15 +43,14 @@ class MainActivity : AppCompatActivity() {
                 }
                 return true
             }
-
             override fun onQueryTextChange(p0: String?): Boolean {
                 return true
             }
-
         })
     }
 
     private fun fetchWeatherData(CityName :String) {
+         progressDialog.show()
         val retrofit = Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
             .baseUrl("https://api.openweathermap.org/data/2.5/")
@@ -57,6 +63,7 @@ class MainActivity : AppCompatActivity() {
                  call: Call<WeatherAppData>,
                  response: Response<WeatherAppData>
              ) {
+                 progressDialog.dismiss()
                  val responseBody = response.body()
                  if(response.isSuccessful && responseBody != null){
 
@@ -97,25 +104,25 @@ class MainActivity : AppCompatActivity() {
     private fun changeBackgroundImagesAcctoCondition(conditions: String) {
         when(conditions){
             "clear Sky", "Sunny", "Clear" ->{
-                binding.root.setBackgroundResource(R.drawable.sunny_weather)
+                binding.root.setBackgroundResource(R.drawable.sunny3)
                 binding.lottieAnimation.setAnimation(R.raw.sun)
             }
 
             "Partly Clouds", "Clouds", "OverCast", "Mist", "Foggy", "Cloud" ->{
                 binding.root.setBackgroundResource(R.drawable.colud_background)
-                binding.lottieAnimation.setAnimation(R.raw.cloud)
+                binding.lottieAnimation.setAnimation(R.raw.cloudy_weather)
             }
 
             "Light Rain", "Drizzle", "Moderate Rain", "Showers", "Heavy Rain", "Rain"->{
                 binding.root.setBackgroundResource(R.drawable.rain_background)
-                binding.lottieAnimation.setAnimation(R.raw.rain)
+                binding.lottieAnimation.setAnimation(R.raw.rainy_weather)
             }
             "Light Snow", "Moderate Snow", "Heavy Snow", "Blizzard" ->{
                 binding.root.setBackgroundResource(R.drawable.snow_background)
-                binding.lottieAnimation.setAnimation(R.raw.snow)
+                binding.lottieAnimation.setAnimation(R.raw.snow_weather)
             }
             else ->{
-                binding.root.setBackgroundResource(R.drawable.sunny_weather)
+                binding.root.setBackgroundResource(R.drawable.sunny3)
                 binding.lottieAnimation.setAnimation(R.raw.sun)
             }
         }
